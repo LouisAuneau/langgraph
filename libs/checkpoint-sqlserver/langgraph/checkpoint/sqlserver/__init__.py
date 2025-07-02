@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import threading
 from collections import defaultdict
 from collections.abc import Iterator, Sequence
@@ -366,8 +365,8 @@ class SQLServerSaver(BaseSQLServerSaver):
                     checkpoint_ns,
                     checkpoint["id"],
                     checkpoint_id,
-                    json.dumps(copy),
-                    json.dumps(get_checkpoint_metadata(config, metadata)),
+                    self.serde.dumps_typed(copy),
+                    self.serde.dumps_typed(get_checkpoint_metadata(config, metadata)),
                 ),
             )
 
@@ -395,7 +394,6 @@ class SQLServerSaver(BaseSQLServerSaver):
             else INSERT_CHECKPOINT_WRITES_SQL.replace("${SCHEMA}", self.schema)
         )
 
-        print(str(all(w[0] in WRITES_IDX_MAP for w in writes)))
         with self._cursor() as cur:
             cur.executemany(
                 query,

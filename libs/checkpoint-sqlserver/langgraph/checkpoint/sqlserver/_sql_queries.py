@@ -97,15 +97,11 @@ SELECT_SQL = """
                     ),
                     ']'
                 )
-            FROM OPENJSON(${SCHEMA}.checkpoints.[checkpoint], '$.channel_versions')
-            WITH (
-                [key] NVARCHAR(MAX) '$.key',
-                [value] NVARCHAR(MAX) '$.value'
-            ) as json_table
+            FROM OPENJSON(${SCHEMA}.checkpoints.[checkpoint], '$.channel_versions') AS json_table
             INNER JOIN ${SCHEMA}.checkpoint_blobs bl
                 ON bl.thread_id = checkpoints.thread_id
                 AND bl.checkpoint_ns = checkpoints.checkpoint_ns
-                AND bl.channel = json_table.[key]
+                AND bl.channel COLLATE Latin1_General_BIN2 = json_table.[key]
                 AND bl.version = json_table.[value]
         ) AS channel_values,
         (

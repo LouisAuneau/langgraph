@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import random
 from collections.abc import Sequence
 from typing import Any, Optional, cast, overload
@@ -46,9 +45,9 @@ class BaseSQLServerSaver(BaseCheckpointSaver[str]):
         if not blob_values:
             return {}
         return {
-            k.decode(): self.serde.loads_typed((t.decode(), v))
+            k: self.serde.loads_typed((t, bytes.fromhex(v)))
             for k, t, v in blob_values
-            if t.decode() != "empty"
+            if t != "empty"
         }
 
     def _dump_blobs(
@@ -284,5 +283,5 @@ class BaseSQLServerSaver(BaseCheckpointSaver[str]):
         """
         for json_field in json_fields or []:
             if json_field in data and isinstance(data[json_field], str):
-                data[json_field] = json.loads(data[json_field])
+                data[json_field] = self.serde.loads(data[json_field])
         return data
